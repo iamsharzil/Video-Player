@@ -1,0 +1,1 @@
+export const DURATION_PLACEHOLDER = "00:00";
