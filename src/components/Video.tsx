@@ -5,16 +5,17 @@ import Hls from "hls.js";
 
 import { useVideo } from "src/provider/VideoProvider";
 
+import { VideoPropsState } from "src/reducer/video";
+
 import useVideoEvents from "src/hooks/useVideoEvents";
 
-type Props = {
-  children?: React.ReactNode;
-};
+type Props = VideoPropsState;
 
 type Ref = HTMLVideoElement;
 
 export const Video = React.forwardRef<Ref, Props>((props, videoRef) => {
   const { autoPlay, controls, url } = useVideo();
+  const { fluid } = props;
   const {
     handleDurationChange,
     handleOnEnd,
@@ -45,6 +46,11 @@ export const Video = React.forwardRef<Ref, Props>((props, videoRef) => {
     }
   }, [url, videoRef]);
 
+  const styles = css`
+    width: ${fluid ? "100%" : "inherit"};
+    height: ${fluid ? "100%" : "inherit"};
+  `;
+
   return (
     <video
       preload="auto"
@@ -63,6 +69,7 @@ export const Video = React.forwardRef<Ref, Props>((props, videoRef) => {
       onSeeking={handleOnSeeking}
       onSeeked={handleOnSeeked}
       onPlaying={() => console.log("on playing")}
+      className={styles}
       {...props}
     />
   );

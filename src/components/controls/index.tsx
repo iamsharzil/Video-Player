@@ -3,11 +3,6 @@ import React from "react";
 import { Stack } from "@mui/material";
 import { Box } from "@mui/system";
 
-import { useVideo } from "src/provider/VideoProvider";
-
-import useVideoControls from "src/hooks/useVideoControls";
-import useVideoEvents from "src/hooks/useVideoEvents";
-
 import { Settings } from "../settings";
 
 import { FullScreen } from "./FullScreen";
@@ -17,11 +12,6 @@ import { VideoDurationLabel } from "./VideoDurationLabel";
 import { VolumeSlider } from "./VolumeSlider";
 
 type Props = { children: React.ReactNode };
-
-const callAll =
-  (...fns: any[]) =>
-  (...args: any[]) =>
-    fns.forEach((fn) => fn && fn(...args));
 
 export const Controls: React.FC = () => {
   const controls = true;
@@ -55,67 +45,3 @@ export const Controls: React.FC = () => {
     </Box>
   );
 };
-
-const Play: React.FC<Props> = ({ children }) => {
-  const { handleOnPlay } = useVideoEvents();
-  return (
-    <React.Fragment>
-      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, { onClick: callAll(handleOnPlay, child.props.onClick) });
-        }
-
-        // @TODO
-        // WHETHER TO ADD SUPPORT OF ONCLICK FOR NON REACT ELEMENTS
-
-        return child; // string | boolean | number
-      })}
-    </React.Fragment>
-  );
-};
-
-const Pause: React.FC<Props> = ({ children }) => {
-  const { handleOnPause } = useVideoEvents();
-  return (
-    <React.Fragment>
-      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, { onClick: callAll(handleOnPause, child.props.onClick) });
-        }
-        return child;
-      })}
-    </React.Fragment>
-  );
-};
-
-const Unmute: React.FC<Props> = ({ children }) => {
-  const { toggleVideoMute } = useVideoControls();
-
-  return (
-    <React.Fragment>
-      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, { onClick: callAll(() => toggleVideoMute(false), child.props.onClick) });
-        }
-        return child;
-      })}
-    </React.Fragment>
-  );
-};
-
-const Mute: React.FC<Props> = ({ children }) => {
-  const { toggleVideoMute } = useVideoControls();
-
-  return (
-    <React.Fragment>
-      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, { onClick: callAll(() => toggleVideoMute(true), child.props.onClick) });
-        }
-        return child;
-      })}
-    </React.Fragment>
-  );
-};
-
-export { Play, Pause, Mute, Unmute };

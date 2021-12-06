@@ -1,12 +1,13 @@
 import React from "react";
 
+import { css, cx } from "@emotion/css";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 import { ThemeProvider, Theme } from "@mui/system";
 
-import { Play, Pause, Mute, Unmute, Controls } from "src/components/controls";
-
+import { Controls } from "./components/controls";
 import { VideoPlayer } from "./provider/VideoProvider";
+import { ControlsView } from "./view/controls";
 
 export const theme: () => Theme = () => {
   const themes = createTheme({
@@ -74,44 +75,30 @@ const App: () => JSX.Element = () => {
   return (
     <ThemeProvider theme={theme()}>
       <CssBaseline />
-      <VideoPlayer
-        url="https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
-        controls={false}
-        ref={videoRef}
-        autoPlay={false}
-        fluid={true}
+      <div
+        className={css`
+          background-color: #000;
+          height: 400px;
+          margin: 0 auto;
+          position: relative;
+          width: 900px;
+        `}
       >
-        {/* <div>
-          <div>
-            <Controls />
-          </div> */}
-        <Controls2 />
-        {/* </div> */}
-      </VideoPlayer>
+        <VideoPlayer
+          url="https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+          controls={false}
+          ref={videoRef}
+          autoPlay={false}
+          poster="https://www.zenius.net/assets/v-img/8/3a/a896/83aa89608331411bf4fbf6532dbd66cf15b503ff3b08178de18ae502c772b60e.jpg"
+
+          // fluid={true}
+        >
+          {/* <Controls /> */}
+          <ControlsView />
+        </VideoPlayer>
+      </div>
     </ThemeProvider>
   );
 };
 
 export default App;
-
-const Controls2 = () => {
-  return (
-    <div>
-      <Play>
-        <button>Play</button>
-      </Play>
-
-      <Pause>
-        <button>Pause</button>
-      </Pause>
-
-      <Mute>
-        <button>Mute</button>
-      </Mute>
-
-      <Unmute>
-        <button>Unmute</button>
-      </Unmute>
-    </div>
-  );
-};

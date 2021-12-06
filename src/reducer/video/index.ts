@@ -15,6 +15,7 @@ export type VideoPropsState = {
   muted?: boolean;
   url?: string | undefined;
   fluid?: boolean;
+  poster?: string;
 };
 
 export type VideoState = VideoPropsState & {
@@ -59,6 +60,7 @@ const initialPropState: VideoPropsState = {
   controls: true,
   fluid: true,
   muted: false,
+  poster: undefined,
   url: undefined,
 };
 
