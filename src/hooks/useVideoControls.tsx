@@ -56,12 +56,12 @@ const useVideoControls: () => {
    * @description: The toggleFullScreen function will toggle full screen for the parent node which includes both, video and controls
    */
   const toggleFullScreen = (status: boolean) => {
-    // dispatch({
-    //   type: VideoStatus.TOGGLE_FULLSCREEN,
-    //   payload: {
-    //     fullScreen: status,
-    //   },
-    // });
+    dispatch({
+      type: VideoStatus.TOGGLE_FULLSCREEN,
+      payload: {
+        fullscreen: status,
+      },
+    });
 
     if (!status) {
       dispatch({

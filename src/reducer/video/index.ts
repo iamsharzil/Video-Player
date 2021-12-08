@@ -3,6 +3,7 @@ enum VideoStatus {
   INIT = "INIT",
   LOADING = "LOADING",
   TOGGLE_CONTROLS = "TOGGLE_CONTROLS",
+  TOGGLE_FULLSCREEN = "TOGGLE_FULLSCREEN",
   TOGGLE_LOADING = "TOGGLE_LOADING",
   TOGGLE_MUTE = "TOGGLE_MUTE",
   TOGGLE_PLAY = "TOGGLE_PLAY",
@@ -20,6 +21,7 @@ export type VideoPropsState = {
 
 export type VideoState = VideoPropsState & {
   controls: boolean;
+  fullscreen: boolean;
   loading: boolean;
   play: boolean;
   mute: boolean;
@@ -52,7 +54,12 @@ interface TogglePlay {
   payload: { play: boolean };
 }
 
-export type VideoActions = InitVideo | ToggleControls | ToggleLoading | ToggleMute | TogglePlay;
+interface ToggleFullScreen {
+  type: VideoStatus.TOGGLE_FULLSCREEN;
+  payload: { fullscreen: boolean };
+}
+
+export type VideoActions = InitVideo | ToggleControls | ToggleFullScreen | ToggleLoading | ToggleMute | TogglePlay;
 
 // INITIAL STATE
 const initialPropState: VideoPropsState = {
@@ -66,6 +73,7 @@ const initialPropState: VideoPropsState = {
 
 const initialState: VideoState = {
   controls: true,
+  fullscreen: false,
   loading: true,
   play: true,
   mute: false,
@@ -85,6 +93,9 @@ function videoReducer(state: VideoState, action: VideoActions): VideoState {
 
     case VideoStatus.TOGGLE_CONTROLS:
       return { ...state, controls: action.payload.controls };
+
+    case VideoStatus.TOGGLE_FULLSCREEN:
+      return { ...state, fullscreen: action.payload.fullscreen };
 
     case VideoStatus.TOGGLE_LOADING:
       return { ...state, loading: action.payload.loading };
