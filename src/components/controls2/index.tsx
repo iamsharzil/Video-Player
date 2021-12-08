@@ -15,7 +15,6 @@ const Play: React.FC<Props> = ({ children }) => {
   return (
     <React.Fragment>
       {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
-        console.log(children);
         if (React.isValidElement(child)) {
           return React.cloneElement(child, { onClick: callAll(handleOnPlay, child.props.onClick) });
         }
@@ -73,4 +72,57 @@ const Mute: React.FC<Props> = ({ children }) => {
   );
 };
 
-export { Play, Pause, Mute, Unmute };
+const FullScreen: React.FC<Props> = ({ children }) => {
+  const { toggleFullScreen } = useVideoControls();
+
+  return (
+    <React.Fragment>
+      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, { onClick: callAll(() => toggleFullScreen(true), child.props.onClick) });
+        }
+        return child;
+      })}
+    </React.Fragment>
+  );
+};
+
+const FullScreenExit: React.FC<Props> = ({ children }) => {
+  const { toggleFullScreen } = useVideoControls();
+
+  return (
+    <React.Fragment>
+      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, { onClick: callAll(() => toggleFullScreen(false), child.props.onClick) });
+        }
+        return child;
+      })}
+    </React.Fragment>
+  );
+};
+
+const Settings: React.FC<Props> = ({ children }) => {
+  const { toggleFullScreen } = useVideoControls();
+
+  return (
+    <React.Fragment>
+      {React.Children.map<React.ReactNode, React.ReactNode>(children, (child) => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, { onClick: callAll(() => toggleFullScreen(false), child.props.onClick) });
+        }
+        return child;
+      })}
+    </React.Fragment>
+  );
+};
+
+export {
+  FullScreen as BaseFullScreen,
+  FullScreenExit as BaseFullScreenExit,
+  Mute as BaseMute,
+  Play as BasePlay,
+  Pause as BasePause,
+  Settings as BaseSettings,
+  Unmute as BaseUnmute,
+};
