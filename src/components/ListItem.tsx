@@ -1,21 +1,24 @@
-import { css } from "@emotion/css";
+import { css, cx } from "@emotion/css";
 import { RightArrowIcon } from "src/icons";
 
 type LiProps = React.HTMLAttributes<HTMLLIElement> & {
-  value?: string;
+  value?: string | number;
   index?: number;
   onClick?: (_e: React.MouseEvent<HTMLLIElement, MouseEvent>, index: number) => void;
 };
 
-export const ListItem: React.FC<LiProps> = ({ title, value, index, onClick, ...props }) => {
+export const ListItem: React.FC<LiProps> = ({ className, title, value, index, onClick, ...props }) => {
   return (
     <li
-      className={css`
-        padding: 0.8rem;
-        &:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
-      `}
+      className={cx([
+        css`
+          padding: 0.8rem;
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+          }
+        `,
+        className,
+      ])}
       role="listitem"
       aria-haspopup="true"
       onClick={(e) => onClick(e, index)}

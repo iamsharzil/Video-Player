@@ -7,32 +7,20 @@ enum SettingStatus {
 
 export type SettingState = {
   open?: boolean;
-  playback?: boolean;
-  videoQuality?: boolean;
+  activeSetting: "playback" | "videoQuality" | "none";
 };
 
 // INTERFACE
 interface ToggleSettings {
   type: SettingStatus.TOGGLE_SETTINGS;
-  payload: { open: boolean; videoQuality: boolean; playback: boolean };
+  payload: { open: boolean; activeSetting: "playback" | "videoQuality" | "none" };
 }
 
-interface TogglePlayback {
-  type: SettingStatus.TOGGLE_PLAYBACK;
-  payload: { open: boolean; videoQuality: boolean; playback: boolean };
-}
-
-interface ToggleVideoQuality {
-  type: SettingStatus.TOGGLE_VIDEO_QUALITY;
-  payload: { open: boolean; videoQuality: boolean; playback: boolean };
-}
-
-export type SettingActions = ToggleSettings | TogglePlayback | ToggleVideoQuality;
+export type SettingActions = ToggleSettings;
 
 const initialState: SettingState = {
+  activeSetting: "none",
   open: false,
-  playback: false,
-  videoQuality: false,
 };
 
 // REDUCER
@@ -41,25 +29,8 @@ function settingsReducer(state: SettingState, action: SettingActions): SettingSt
     case SettingStatus.TOGGLE_SETTINGS:
       return {
         ...state,
+        activeSetting: action.payload.activeSetting,
         open: action.payload.open,
-        playback: action.payload.playback,
-        videoQuality: action.payload.videoQuality,
-      };
-
-    case SettingStatus.TOGGLE_PLAYBACK:
-      return {
-        ...state,
-        open: action.payload.open,
-        playback: action.payload.playback,
-        videoQuality: action.payload.videoQuality,
-      };
-
-    case SettingStatus.TOGGLE_VIDEO_QUALITY:
-      return {
-        ...state,
-        open: action.payload.open,
-        playback: action.payload.playback,
-        videoQuality: action.payload.videoQuality,
       };
   }
 }

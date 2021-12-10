@@ -1,11 +1,11 @@
 import React from "react";
 
-import { css, cx } from "@emotion/css";
+import { css } from "@emotion/css";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 import { ThemeProvider, Theme } from "@mui/system";
+import Hls from "hls.js";
 
-import { Controls } from "./components/controls";
 import { VideoPlayer } from "./provider/VideoProvider";
 import { ControlsView } from "./view/controls";
 
@@ -70,6 +70,15 @@ export const theme: () => Theme = () => {
   return responsiveFontSizes(themes);
 };
 
+const config = {
+  // xhrSetup: function (xhr: XMLHttpRequest, _url: string) {
+  //   xhr.withCredentials = true; // do send cookies
+  // },
+  // debug: true,
+};
+
+const hls = new Hls(config);
+
 const App: () => JSX.Element = () => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   return (
@@ -78,7 +87,7 @@ const App: () => JSX.Element = () => {
       <div
         className={css`
           background-color: #000;
-          height: 400px;
+          height: 800px;
           margin: 0 auto;
           position: relative;
           width: 900px;
@@ -90,7 +99,7 @@ const App: () => JSX.Element = () => {
           ref={videoRef}
           autoPlay={false}
           poster="https://www.zenius.net/assets/v-img/8/3a/a896/83aa89608331411bf4fbf6532dbd66cf15b503ff3b08178de18ae502c772b60e.jpg"
-
+          hls={hls}
           // fluid={true}
         >
           {/* <Controls /> */}

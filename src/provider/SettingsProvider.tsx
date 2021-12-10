@@ -1,6 +1,6 @@
 import React from "react";
 
-import { settingsReducer, SettingActions, initialState, SettingState } from "src/reducer/settings";
+import { settingsReducer, SettingActions, initialState, SettingState, SettingStatus } from "src/reducer/settings";
 
 const SettingDispatchContext = React.createContext<React.Dispatch<SettingActions>>(() => undefined);
 SettingDispatchContext.displayName = "SettingDispatchContext";
@@ -28,14 +28,27 @@ const useSettings: () => SettingState = () => {
   return context;
 };
 
-const useDispatchSettings: () => React.Dispatch<SettingActions> = () => {
+const useDispatchSettings: () => {
+  context: React.Dispatch<SettingActions>;
+  handleSettingsClick: (open: boolean, activeSetting: "playback" | "videoQuality" | "none") => void;
+} = () => {
   const context = React.useContext(SettingDispatchContext);
 
   if (!context) {
     throw new Error("useDispatchSettings must be used inside SettingProvider");
   }
 
-  return context;
+  const handleSettingsClick = (open: boolean, activeSetting: "playback" | "videoQuality" | "none") => {
+    context({
+      type: SettingStatus.TOGGLE_SETTINGS,
+      payload: {
+        open,
+        activeSetting,
+      },
+    });
+  };
+
+  return { context, handleSettingsClick };
 };
 
 export { SettingProvider, useSettings, useDispatchSettings };

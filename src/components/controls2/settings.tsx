@@ -4,45 +4,26 @@ import { css, cx } from "@emotion/css";
 import { LeftArrowIcon, SettingsIcon } from "src/icons";
 
 import { useDispatchSettings, useSettings } from "src/provider/SettingsProvider";
+import { useDispatchVideo, useVideo } from "src/provider/VideoProvider";
 
-import { SettingStatus } from "src/reducer/settings";
+import { VideoStatus } from "src/reducer/video";
 
 import { Button } from "../Button";
 import { List } from "../List";
 import { ListItem } from "../ListItem";
 
-const settingOptions = [
-  {
-    id: 0,
-    title: "Playback Speed",
-    values: [2.5, 1.5, 1, 0.5],
-  },
-  {
-    id: 1,
-    title: "Quality",
-    values: ["720p", "480p", "360p", "240p"],
-  },
-];
-
 export const BaseSettings: () => JSX.Element = () => {
   const { open } = useSettings();
-  const dispatch = useDispatchSettings();
+  const { handleSettingsClick } = useDispatchSettings();
 
   return (
     <>
       <Button
         aria-label="Settings"
         aria-expanded={open}
-        onClick={() =>
-          dispatch({
-            type: SettingStatus.TOGGLE_SETTINGS,
-            payload: {
-              open: !open,
-              playback: false,
-              videoQuality: false,
-            },
-          })
-        }
+        onClick={() => {
+          handleSettingsClick(!open, "none");
+        }}
       >
         <SettingsIcon width="2rem" />
       </Button>
@@ -54,10 +35,14 @@ export const BaseSettings: () => JSX.Element = () => {
 export type DivProps = React.HTMLAttributes<HTMLDivElement>;
 
 const SettingOptions: React.FC<DivProps> = ({ className }) => {
-  const { open, playback, videoQuality } = useSettings();
-  const dispatch = useDispatchSettings();
+  const { open, activeSetting } = useSettings();
+  const { handleSettingsClick } = useDispatchSettings();
 
-  const isSettingOptionVisible = open || playback || videoQuality;
+  const { video, videoQuality: videoQualities, selectedQuality } = useVideo();
+
+  // const [videoQualities, setVideoQualities] = React.useState([]);
+
+  const isSettingOptionVisible = open || activeSetting !== "none";
 
   const styles = cx([
     css`
@@ -75,42 +60,42 @@ const SettingOptions: React.FC<DivProps> = ({ className }) => {
     className,
   ]);
 
+  const playbackValue = video?.playbackRate === 1 ? "Normal" : `${video?.playbackRate}x`;
+  const selectedVideoQuality = videoQualities?.find((v) => v.value === selectedQuality);
+  const videoQualityValue = selectedVideoQuality?.label === "Auto" ? "Auto" : `${selectedVideoQuality?.label}p`;
+
   return (
     <div className={styles}>
       <List visible={open}>
         <ListItem
           title="Playback Speed"
-          value="Normal"
-          onClick={() =>
-            dispatch({
-              type: SettingStatus.TOGGLE_PLAYBACK,
-              payload: { open: false, playback: true, videoQuality: false },
-            })
-          }
+          value={playbackValue}
+          onClick={() => {
+            handleSettingsClick(false, "playback");
+          }}
         />
         <ListItem
           title="Video Quality"
-          value="360p"
-          onClick={() =>
-            dispatch({
-              type: SettingStatus.TOGGLE_VIDEO_QUALITY,
-              payload: { open: false, playback: false, videoQuality: true },
-            })
-          }
+          value={videoQualityValue}
+          onClick={() => {
+            handleSettingsClick(false, "videoQuality");
+          }}
         />
       </List>
-
       <PlaybackSpeed />
-      <VideoQuality />
+      {videoQualities.length ? <VideoQuality videoQualities={videoQualities} /> : null}
     </div>
   );
 };
 
 const PlaybackSpeed: () => JSX.Element = () => {
-  const { playback } = useSettings();
-  const dispatch = useDispatchSettings();
+  const { video } = useVideo();
+  const { activeSetting } = useSettings();
+  const { handleSettingsClick } = useDispatchSettings();
 
-  if (!playback) return <></>;
+  const isPlaybackActive = activeSetting === "playback";
+
+  if (!isPlaybackActive) return <></>;
 
   return (
     <>
@@ -122,30 +107,50 @@ const PlaybackSpeed: () => JSX.Element = () => {
           padding: 0.8rem 0.2rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.7);
         `}
-        onClick={() =>
-          dispatch({
-            type: SettingStatus.TOGGLE_PLAYBACK,
-            payload: { open: true, playback: false, videoQuality: false },
-          })
-        }
+        onClick={() => handleSettingsClick(true, "none")}
       >
         <LeftArrowIcon width={"1.5rem"} />
-        <span className={css``}>Video Quality</span>
+        <span className={css``}>Playback Speed</span>
       </div>
-      <List visible={playback}>
-        {settingOptions[0].values.map((value, index) => (
-          <ListItem key={index} title={value.toString()} />
-        ))}
+      <List visible={isPlaybackActive}>
+        {[2.5, 1.5, 1, 0.5].map((value, index) => {
+          const handlePlaybackClick = () => {
+            video.playbackRate = +value;
+            handleSettingsClick(true, "none");
+          };
+
+          return (
+            <ListItem
+              key={index}
+              title={value.toString()}
+              onClick={handlePlaybackClick}
+              className={css`
+                font-weight: ${video.playbackRate === +value ? "bold" : "none"};
+              `}
+            />
+          );
+        })}
       </List>
     </>
   );
 };
 
-const VideoQuality: () => JSX.Element = () => {
-  const { videoQuality } = useSettings();
-  const dispatch = useDispatchSettings();
+const VideoQuality: React.FC<{
+  videoQualities: Array<{
+    value: string | number;
+    label: string | number;
+  }>;
+}> = ({ videoQualities }) => {
+  const { hls, selectedQuality } = useVideo();
+  const { activeSetting } = useSettings();
+  const dispatch = useDispatchVideo();
+  const { handleSettingsClick } = useDispatchSettings();
 
-  if (!videoQuality) return <></>;
+  const isVideoQualityActive = activeSetting === "videoQuality";
+
+  if (!isVideoQualityActive) return <></>;
+
+  console.log("called 2", hls.currentLevel, hls.nextLevel, hls.nextLoadLevel, selectedQuality);
 
   return (
     <>
@@ -157,20 +162,34 @@ const VideoQuality: () => JSX.Element = () => {
           padding: 0.8rem 0.2rem;
           border-bottom: 1px solid rgba(255, 255, 255, 0.7);
         `}
-        onClick={() =>
-          dispatch({
-            type: SettingStatus.TOGGLE_VIDEO_QUALITY,
-            payload: { open: true, playback: false, videoQuality: false },
-          })
-        }
+        onClick={() => {
+          handleSettingsClick(true, "none");
+        }}
       >
         <LeftArrowIcon width={"1.5rem"} />
         <span className={css``}>Video Quality</span>
       </div>
-      <List visible={videoQuality}>
-        {settingOptions[1].values.map((value, index) => (
-          <ListItem key={index} title={value.toString()} />
-        ))}
+      <List visible={isVideoQualityActive}>
+        {videoQualities.map(({ label, value }, index) => {
+          const handleVideoQualityClick = () => {
+            if (selectedQuality !== value) {
+              dispatch({ type: VideoStatus.CHANGE_VIDEO_QUALITY, payload: { selectedQuality: +value } });
+              hls.currentLevel = +value;
+            }
+            handleSettingsClick(true, "none");
+          };
+
+          return (
+            <ListItem
+              key={index}
+              title={label === "Auto" ? label : `${label}p`}
+              onClick={handleVideoQualityClick}
+              className={css`
+                font-weight: ${selectedQuality === +value ? "bold" : "none"};
+              `}
+            />
+          );
+        })}
       </List>
     </>
   );

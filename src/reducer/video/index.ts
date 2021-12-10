@@ -1,3 +1,4 @@
+import Hls from "hls.js";
 // ENUM
 enum VideoStatus {
   INIT = "INIT",
@@ -7,6 +8,8 @@ enum VideoStatus {
   TOGGLE_LOADING = "TOGGLE_LOADING",
   TOGGLE_MUTE = "TOGGLE_MUTE",
   TOGGLE_PLAY = "TOGGLE_PLAY",
+  VIDEO_QUALITY = "VIDEO_QUALITY",
+  CHANGE_VIDEO_QUALITY = "CHANGE_VIDEO_QUALITY",
 }
 
 // STATE
@@ -17,6 +20,7 @@ export type VideoPropsState = {
   url?: string | undefined;
   fluid?: boolean;
   poster?: string;
+  hls: Hls | undefined;
 };
 
 export type VideoState = VideoPropsState & {
@@ -26,6 +30,11 @@ export type VideoState = VideoPropsState & {
   play: boolean;
   mute: boolean;
   video: HTMLVideoElement | null;
+  videoQuality: Array<{
+    value: string | number;
+    label: string | number;
+  }>;
+  selectedQuality: number;
 };
 
 // INTERFACE
@@ -59,7 +68,29 @@ interface ToggleFullScreen {
   payload: { fullscreen: boolean };
 }
 
-export type VideoActions = InitVideo | ToggleControls | ToggleFullScreen | ToggleLoading | ToggleMute | TogglePlay;
+interface VideoQuality {
+  type: VideoStatus.VIDEO_QUALITY;
+  payload: {
+    videoQuality: Array<{
+      value: string | number;
+      label: string | number;
+    }>;
+  };
+}
+interface ChangeVideoQuality {
+  type: VideoStatus.CHANGE_VIDEO_QUALITY;
+  payload: { selectedQuality: number };
+}
+
+export type VideoActions =
+  | ChangeVideoQuality
+  | InitVideo
+  | ToggleControls
+  | ToggleFullScreen
+  | ToggleLoading
+  | ToggleMute
+  | TogglePlay
+  | VideoQuality;
 
 // INITIAL STATE
 const initialPropState: VideoPropsState = {
@@ -69,6 +100,7 @@ const initialPropState: VideoPropsState = {
   muted: false,
   poster: undefined,
   url: undefined,
+  hls: undefined,
 };
 
 const initialState: VideoState = {
@@ -78,6 +110,8 @@ const initialState: VideoState = {
   play: true,
   mute: false,
   video: null,
+  videoQuality: [], // [{ value: "-1", label: "Auto", selected: true }],
+  selectedQuality: -1,
   ...initialPropState,
 };
 
@@ -89,6 +123,18 @@ function videoReducer(state: VideoState, action: VideoActions): VideoState {
         ...state,
         video: action.payload.video,
         loading: action.payload.loading,
+      };
+
+    case VideoStatus.VIDEO_QUALITY:
+      return {
+        ...state,
+        videoQuality: action.payload.videoQuality,
+      };
+
+    case VideoStatus.CHANGE_VIDEO_QUALITY:
+      return {
+        ...state,
+        selectedQuality: action.payload.selectedQuality,
       };
 
     case VideoStatus.TOGGLE_CONTROLS:

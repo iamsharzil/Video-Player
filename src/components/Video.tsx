@@ -1,6 +1,6 @@
 import React from "react";
 
-import { css, cx } from "@emotion/css";
+import { css } from "@emotion/css";
 import Hls from "hls.js";
 
 import { useVideo } from "src/provider/VideoProvider";
@@ -14,7 +14,7 @@ type Props = VideoPropsState;
 type Ref = HTMLVideoElement;
 
 export const Video = React.forwardRef<Ref, Props>((props, videoRef) => {
-  const { autoPlay, controls, url } = useVideo();
+  const { hls, autoPlay, controls, url, selectedQuality } = useVideo();
   const { fluid } = props;
   const {
     handleDurationChange,
@@ -30,21 +30,36 @@ export const Video = React.forwardRef<Ref, Props>((props, videoRef) => {
 
   React.useEffect(() => {
     if (Hls.isSupported()) {
-      const hls = new Hls();
       hls.attachMedia((videoRef as React.MutableRefObject<HTMLVideoElement>).current);
-
       hls.on(Hls.Events.MEDIA_ATTACHED, function () {
         hls.loadSource(url);
-        // "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
-        // "https://vs4zenius.akamaized.net/m3u8/4/64/4f0f/4644f0fa61c7d5ce3f081726ac263e60db6c58a40ab41934af4a6fbb49983bf1.m3u8?hdnts=st=1638180567~exp=1638182367~acl=/m3u8/4/64/4f0f*~hmac=01572b37913f505fc92e4a8e79089f0df3183310e76949f81b95195b8495f1c0"
-
-        // hls.on(Hls.Events.MANIFEST_PARSED, function (_event, data) {
-        //   console.log("manifest loaded, found " + data.levels.length + " quality level");
-        //   console.log(data);
-        // });
       });
     }
-  }, [url, videoRef]);
+  }, [hls, url, videoRef]);
+
+  React.useEffect(() => {
+    if (Hls.isSupported()) {
+      hls.on(Hls.Events.ERROR, function (_event, data) {
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              // try to recover network error
+              console.log("fatal network error encountered, try to recover");
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.log("fatal media error encountered, try to recover");
+              hls.recoverMediaError();
+              break;
+            default:
+              // cannot recover
+              hls.destroy();
+              break;
+          }
+        }
+      });
+    }
+  }, [hls]);
 
   const styles = css`
     width: ${fluid ? "100%" : "inherit"};
@@ -54,8 +69,6 @@ export const Video = React.forwardRef<Ref, Props>((props, videoRef) => {
   return (
     <video
       preload="auto"
-      width={900}
-      height={400}
       ref={videoRef}
       autoPlay={autoPlay}
       controls={controls}

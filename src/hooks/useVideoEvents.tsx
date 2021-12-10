@@ -1,5 +1,6 @@
 import React from "react";
 
+import { useDispatchSettings } from "src/provider/SettingsProvider";
 import { useDispatchVideoProgress } from "src/provider/VideoProgressProvider";
 import { useDispatchVideo, useVideo } from "src/provider/VideoProvider";
 
@@ -18,9 +19,10 @@ const useVideoEvents: () => {
   handleOnSeeked: (event?: React.SyntheticEvent<HTMLVideoElement>) => void;
   handleOnWaiting: (event?: React.SyntheticEvent<HTMLVideoElement>) => void;
 } = () => {
-  const { video } = useVideo();
+  const { hls, selectedQuality, video } = useVideo();
   const dispatch = useDispatchVideo();
   const dispatchProgress = useDispatchVideoProgress();
+  const dispatchSettings = useDispatchSettings();
   // const status = useScript("//cdn.jsdelivr.net/npm/hls.js@latest");
 
   /**
@@ -30,7 +32,7 @@ const useVideoEvents: () => {
    */
 
   const handleDurationChange = (event?: React.SyntheticEvent<HTMLVideoElement>) => {
-    console.log("handleDurationChange");
+    // console.log("handleDurationChange");
     const currentVideo = event.currentTarget;
     const videoWatchedDuration = currentVideo.currentTime;
     const videoPendingDuration = currentVideo.duration - currentVideo.currentTime;
@@ -77,7 +79,6 @@ const useVideoEvents: () => {
 
   const handleOnLoadedData = (event?: React.SyntheticEvent<HTMLVideoElement>) => {
     const currentVideo = event.currentTarget;
-    console.log("handleOnLoadedData");
     dispatch({
       type: VideoStatus.INIT,
       payload: {
@@ -92,6 +93,15 @@ const useVideoEvents: () => {
         totalDuration: currentVideo.duration,
       },
     });
+
+    // SET VIDEO QUALITIES
+    if (hls.levels.length) {
+      const vq = hls.levels.map((level, i) => ({ label: level.height, value: i }));
+      const filterVideoQualities = [...new Map(vq.map((v) => [v.label, v])).values()];
+      const defaultQuality = { label: "Auto", value: -1 };
+      const qualities = vq.length ? [...filterVideoQualities, defaultQuality] : [];
+      dispatch({ type: VideoStatus.VIDEO_QUALITY, payload: { videoQuality: qualities } });
+    }
 
     if (!currentVideo.autoplay) {
       dispatch({
@@ -146,8 +156,6 @@ const useVideoEvents: () => {
         play: true,
       },
     });
-
-    // video.play();
   };
 
   /**
@@ -166,8 +174,6 @@ const useVideoEvents: () => {
         play: false,
       },
     });
-
-    // video.pause();
   };
 
   const handleOnSeeking = (event?: React.SyntheticEvent<HTMLVideoElement>) => {
